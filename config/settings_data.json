@@ -84,13 +84,29 @@
             "settings": {
               "subtext": "<p>Sign up for the latest news, offers and styles<\/p>"
             }
+          },
+          "03d4272f-c848-4383-ab78-b2eb755a19a2": {
+            "type": "text",
+            "settings": {
+              "title": "联系我们",
+              "richtext": ""
+            }
+          },
+          "39da1ce0-13ee-41f2-81cf-11939be4b33f": {
+            "type": "text",
+            "settings": {
+              "title": "联系我们",
+              "richtext": "<p>osakakuma<\/p>"
+            }
           }
         },
         "block_order": [
           "footer-0",
           "footer-1",
           "footer-2",
-          "footer-3"
+          "footer-3",
+          "03d4272f-c848-4383-ab78-b2eb755a19a2",
+          "39da1ce0-13ee-41f2-81cf-11939be4b33f"
         ],
         "settings": {
           "show_methods_of_payment": false
