@@ -1,551 +1,604 @@
-{% comment %}theme-check-disable UndefinedObject{% endcomment %}
-{{ 'section-footer.css' | asset_url | stylesheet_tag }}
-<link rel="stylesheet" href="{{ 'component-newsletter.css' | asset_url }}" media="print" onload="this.media='all'">
-<link rel="stylesheet" href="{{ 'component-list-menu.css' | asset_url }}" media="print" onload="this.media='all'">
-<link rel="stylesheet" href="{{ 'component-list-payment.css' | asset_url }}" media="print" onload="this.media='all'">
-<link rel="stylesheet" href="{{ 'component-list-social.css' | asset_url }}" media="print" onload="this.media='all'">
-<link rel="stylesheet" href="{{ 'component-rte.css' | asset_url }}" media="print" onload="this.media='all'">
-<link rel="stylesheet" href="{{ 'disclosure.css' | asset_url }}" media="print" onload="this.media='all'">
+<footer class="site-footer small--text-center" role="contentinfo">
 
-<noscript>{{ 'component-newsletter.css' | asset_url | stylesheet_tag }}</noscript>
-<noscript>{{ 'component-list-menu.css' | asset_url | stylesheet_tag }}</noscript>
-<noscript>{{ 'component-list-payment.css' | asset_url | stylesheet_tag }}</noscript>
-<noscript>{{ 'component-list-social.css' | asset_url | stylesheet_tag }}</noscript>
-<noscript>{{ 'component-rte.css' | asset_url | stylesheet_tag }}</noscript>
-<noscript>{{ 'disclosure.css' | asset_url | stylesheet_tag }}</noscript>
+<div class="wrapper">
 
-<footer class="footer color-{{ section.settings.color_scheme }}">
-  {%- if section.blocks.size > 0 or section.settings.newsletter_enable or section.settings.show_social -%}
-    <div class="footer__content-top page-width">
-      {%- if section.blocks.size > 0 -%}
-        {%- liquid
-          if section.blocks.size == 9
-            assign footer_grid_class = 'grid--3-col-tablet'
-          elsif section.blocks.size > 6
-            assign footer_grid_class = 'grid--4-col-desktop'
-          elsif section.blocks.size > 4
-            assign footer_grid_class = 'grid--3-col-tablet'
-          endif
-        -%}
-        <div class="footer__blocks-wrapper grid grid--1-col grid--2-col grid--4-col-tablet {{ footer_grid_class }}">
-          {%- for block in section.blocks -%}
-            <div class="footer-block grid__item{% if block.type == 'link_list' and block.settings.heading != blank %} footer-block--menu{% endif %}" {{ block.shopify_attributes }}>
-              {%- if block.settings.heading != blank -%}
-                <h2 class="footer-block__heading">{{- block.settings.heading | escape -}}</h2>
-              {%- endif -%}
+  <div class="grid-uniform">
 
-              {%- case block.type -%}
-                {%- when 'text' -%}
-                  <div class="footer-block__details-content rte">
-                    {{ block.settings.subtext }}
+    {% if settings.social_twitter_link != blank or settings.social_facebook_link != blank or settings.social_pinterest_link != blank or settings.social_google_plus_link != blank or settings.social_instagram_link != blank or settings.social_snapchat_link != blank or settings.social_tumblr_link != blank or settings.social_youtube_link != blank or settings.social_vimeo_link != blank or settings.social_fancy_link != blank or settings.social_rss_link != blank %}
+      {% assign show_social_icons = true %}
+    {% else %}
+      {% assign show_social_icons = false %}
+    {% endif %}
+
+    {% case section.blocks.size %}
+      {% when 0 %}
+      {% when 1 %}
+        {% assign column_width = 'text-center' %}
+        {%- assign article_width = 480 -%}
+      {% when 2 %}
+        {% assign column_width = 'post-large--one-half medium--one-half' %}
+        {%- assign article_width = 480 -%}
+      {% when 3 %}
+        {% assign column_width = 'post-large--one-third medium--one-third' %}
+        {%- assign article_width = 435 -%}
+      {% when 4 %}
+        {% assign column_width = 'post-large--one-quarter medium--one-half' %}
+        {%- assign article_width = 410 -%}
+      {% when 5 %}
+        {% assign column_width = 'post-large--one-fifth medium--one-half' %}
+        {%- assign article_width = 335 -%}
+      {% when 6 %}
+        {% assign column_width = 'post-large--one-sixth medium--one-half' %}
+        {%- assign article_width = 335 -%}
+    {% endcase %}
+
+    {% for block in section.blocks %}
+      {% case block.type %}
+        {% when 'blog' %}
+          <div class="grid__item {{ column_width }} site-footer__links">
+            {% assign blog = blogs[block.settings.blog] %}
+            <h3 class="h4"><a href="{{ blog.url }}">{{ 'layout.footer.blog_title' | t }}</a></h3>
+            {% assign article = blogs[block.settings.blog].articles.first %}
+            <p class="h5">{{ article.title | link_to: article.url }}</p>
+            {% if article.image %}
+              {% capture img_id %}ArticleImage-{{ section.id }}--{{ article.image.id }}{% endcapture %}
+              {% capture wrapper_id %}ArticleImageWrapper-{{ section.id }}--{{ article.image.id }}{% endcapture %}
+              {%- assign img_url = article.image | img_url: '1x1' | replace: '_1x1.', '_{width}x.' -%}
+              {%- assign image_alt = article.title | escape -%}
+              {% include 'image-style' with image: article.image, width: article_width, height: 480, wrapper_id: wrapper_id, img_id: img_id %}
+              <p>
+                <div id="{{ wrapper_id }}" class="article__image-wrapper supports-js">
+                  <div style="padding-top:{{ 1 | divided_by: article.image.aspect_ratio | times: 100}}%;">
+                    <img id="{{ img_id }}"
+                         class="article__image lazyload"
+                         src="{{ article.image | img_url: '300x300' }}"
+                         data-src="{{ img_url }}"
+                         data-widths="[90, 120, 150, 180, 360, 480, 600, 750, 940, 1080, 1296]"
+                         data-aspectratio="{{ article.image.aspect_ratio }}"
+                         data-sizes="auto"
+                         alt="{{ image_alt }}">
                   </div>
-                {%- when 'link_list' -%}
-                  {%- if block.settings.menu != blank and block.settings.heading != blank -%}
-                    <ul class="footer-block__details-content list-unstyled">
-                      {%- for link in block.settings.menu.links -%}
-                        <li>
-                          <a href="{{ link.url }}" class="link link--text list-menu__item list-menu__item--link{% if link.active %} list-menu__item--active{% endif %}">
-                            {{ link.title }}
-                          </a>
-                        </li>
-                      {%- endfor -%}
-                    </ul>
-                  {%- endif -%}
-                {%- when 'image' -%}
-                  <div class="footer-block__details-content footer-block-image {{ block.settings.alignment }}">
-                    {%- if block.settings.image != blank -%}
-                      {%- assign image_size = block.settings.image_width | append: 'x' -%}
-                      <img
-                        srcset= "{{ block.settings.image | img_url: image_size }}, {{ block.settings.image | img_url: image_size, scale: 2 }} 2x"
-                        src="{{ block.settings.image | img_url: '400x' }}"
-                        alt="{{ block.settings.image.alt | escape }}"
-                        loading="lazy"
-                        width="{{ block.settings.image.width }}"
-                        height="{{ block.settings.image.height }}"
-                        style="max-width: min(100%, {{ block.settings.image_width }}px);"
-                      >
-                    {%- else -%}
-                      {{ 'image' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
-                    {%- endif -%}
-                  </div>
-                {%- endcase -%}
+                </div>
+              </p>
+
+              <noscript>
+                <p>{{ article | img_url: 'large' | img_tag: image_alt, 'article__image' | link_to: article.url }}</p>
+              </noscript>
+            {% endif %}
+            {% if article.excerpt.size > 0 %}
+            <div class="clearfix">
+              {{ article.excerpt }}
             </div>
-          {%- endfor -%}
-        </div>
-      {%- endif -%}
-
-      <div class="footer-block--newsletter">
-        {%- if section.settings.newsletter_enable -%}
-          <div class="footer-block__newsletter">
-            {%- if section.settings.newsletter_heading != blank -%}
-              <h2 class="footer-block__heading">{{ section.settings.newsletter_heading | escape }}</h2>
-            {%- endif -%}
-            {%- form 'customer', id: 'ContactFooter', class: 'footer__newsletter newsletter-form' -%}
-              <input type="hidden" name="contact[tags]" value="newsletter">
-              <div class="newsletter-form__field-wrapper">
-                <div class="field">
-                  <input
-                    id="NewsletterForm--{{ section.id }}"
-                    type="email"
-                    name="contact[email]"
-                    class="field__input"
-                    value="{{ form.email }}"
-                    aria-required="true"
-                    autocorrect="off"
-                    autocapitalize="off"
-                    autocomplete="email"
-                    {% if form.errors %}
-                      autofocus
-                      aria-invalid="true"
-                      aria-describedby="ContactFooter-error"
-                    {% elsif form.posted_successfully? %}
-                      aria-describedby="ContactFooter-success"
-                    {% endif %}
-                    placeholder="{{ 'newsletter.label' | t }}"
-                    required
-                  >
-                  <label class="field__label" for="NewsletterForm--{{ section.id }}">
-                    {{ 'newsletter.label' | t }}
-                  </label>
-                  <button type="submit" class="newsletter-form__button field__button" name="commit" id="Subscribe" aria-label="{{ 'newsletter.button_label' | t }}">
-                    {% render 'icon-arrow' %}
-                  </button>
-                </div>
-                {%- if form.errors -%}
-                  <small class="newsletter-form__message form__message" id="ContactFooter-error">{% render 'icon-error' %}{{ form.errors.translated_fields['email'] | capitalize }} {{ form.errors.messages['email'] }}</small>
-                {%- endif -%}
-              </div>
-              {%- if form.posted_successfully? -%}
-                <h3 class="newsletter-form__message newsletter-form__message--success form__message" id="ContactFooter-success" tabindex="-1" autofocus>{% render 'icon-success' %}{{ 'newsletter.success' | t }}</h3>
-              {%- endif -%}
-            {%- endform -%}
+            {% else %}
+              <p>{{ article.content | strip_html | truncatewords: 30 }}</p>
+            {% endif %}
           </div>
-        {%- endif -%}
 
-        {%- if section.settings.show_social -%}
-          <ul class="footer__list-social list-unstyled list-social" role="list">
-            {%- if settings.social_twitter_link != blank -%}
-              <li class="list-social__item">
-                <a href="{{ settings.social_twitter_link }}" class="link link--text list-social__link" aria-describedby="a11y-external-message">
-                  {%- render 'icon-twitter' -%}
-                  <span class="visually-hidden">{{ 'general.social.links.twitter' | t }}</span>
-                </a>
-              </li>
-            {%- endif -%}
-            {%- if settings.social_facebook_link != blank -%}
-              <li class="list-social__item">
-                <a href="{{ settings.social_facebook_link }}" class="link link--text list-social__link" aria-describedby="a11y-external-message">
-                  {%- render 'icon-facebook' -%}
-                  <span class="visually-hidden">{{ 'general.social.links.facebook' | t }}</span>
-                </a>
-              </li>
-            {%- endif -%}
-            {%- if settings.social_pinterest_link != blank -%}
-              <li class="list-social__item">
-                <a href="{{ settings.social_pinterest_link }}" class="link link--text list-social__link" aria-describedby="a11y-external-message">
-                  {%- render 'icon-pinterest' -%}
-                  <span class="visually-hidden">{{ 'general.social.links.pinterest' | t }}</span>
-                </a>
-              </li>
-            {%- endif -%}
-            {%- if settings.social_instagram_link != blank -%}
-              <li class="list-social__item">
-                <a href="{{ settings.social_instagram_link }}" class="link link--text list-social__link" aria-describedby="a11y-external-message">
-                  {%- render 'icon-instagram' -%}
-                  <span class="visually-hidden">{{ 'general.social.links.instagram' | t }}</span>
-                </a>
-              </li>
-            {%- endif -%}
-            {%- if settings.social_tiktok_link != blank -%}
-              <li class="list-social__item">
-                <a href="{{ settings.social_tiktok_link }}" class="link link--text list-social__link" aria-describedby="a11y-external-message">
-                  {%- render 'icon-tiktok' -%}
-                  <span class="visually-hidden">{{ 'general.social.links.tiktok' | t }}</span>
-                </a>
-              </li>
-            {%- endif -%}
-            {%- if settings.social_tumblr_link != blank -%}
-              <li class="list-social__item">
-                <a href="{{ settings.social_tumblr_link }}" class="link link--text list-social__link" aria-describedby="a11y-external-message">
-                  {%- render 'icon-tumblr' -%}
-                  <span class="visually-hidden">{{ 'general.social.links.tumblr' | t }}</span>
-                </a>
-              </li>
-            {%- endif -%}
-            {%- if settings.social_snapchat_link != blank -%}
-              <li class="list-social__item">
-                <a href="{{ settings.social_snapchat_link }}" class="link link--text list-social__link" aria-describedby="a11y-external-message">
-                  {%- render 'icon-snapchat' -%}
-                  <span class="visually-hidden">{{ 'general.social.links.snapchat' | t }}</span>
-                </a>
-              </li>
-            {%- endif -%}
-            {%- if settings.social_youtube_link != blank -%}
-              <li class="list-social__item">
-                <a href="{{ settings.social_youtube_link }}" class="link link--text list-social__link" aria-describedby="a11y-external-message">
-                  {%- render 'icon-youtube' -%}
-                  <span class="visually-hidden">{{ 'general.social.links.youtube' | t }}</span>
-                </a>
-              </li>
-            {%- endif -%}
-            {%- if settings.social_vimeo_link != blank -%}
-              <li class="list-social__item">
-                <a href="{{ settings.social_vimeo_link }}" class="link link--text list-social__link" aria-describedby="a11y-external-message">
-                  {%- render 'icon-vimeo' -%}
-                  <span class="visually-hidden">{{ 'general.social.links.vimeo' | t }}</span>
-                </a>
-              </li>
-            {%- endif -%}
-          </ul>
-        {%- endif -%}
-      </div>
-    </div>
-  {%- endif -%}
-
-  <div class="footer__content-bottom">
-    <div class="footer__content-bottom-wrapper page-width">
-      <div class="footer__column footer__localization">
-        {%- if section.settings.enable_country_selector and localization.available_countries.size > 1 -%}
-          <noscript>
-            {%- form 'localization', id: 'FooterCountryFormNoScript', class: 'localization-form' -%}
-              <div class="localization-form__select">
-                <h2 class="visually-hidden" id="FooterCountryLabelNoScript">{{ 'localization.country_label' | t }}</h2>
-                <select class="localization-selector link" name="country_code" aria-labelledby="FooterCountryLabelNoScript">
-                  {%- for country in localization.available_countries -%}
-                    <option value="{{ country.iso_code }}" {%- if country.iso_code == localization.country.iso_code %} selected{% endif %}>
-                      {{ country.name }} ({{ country.currency.iso_code }} {{ country.currency.symbol }})
-                    </option>
-                  {%- endfor -%}
-                </select>
-                {% render 'icon-caret' %}
-              </div>
-              <button class="button button--tertiary">{{ 'localization.update_country' | t }}</button>
-            {%- endform -%}
-          </noscript>
-          <localization-form>
-            {%- form 'localization', id: 'FooterCountryForm', class: 'localization-form' -%}
-              <div class="no-js-hidden">
-                <h2 class="caption-large" id="FooterCountryLabel">{{ 'localization.country_label' | t }}</h2>
-                <div class="disclosure">
-                  <button type="button" class="disclosure__button localization-form__select localization-selector link link--text caption-large" aria-expanded="false" aria-controls="FooterCountryList" aria-describedby="FooterCountryLabel">
-                    {{ localization.country.name }} ({{ localization.country.currency.iso_code }} {{ localization.country.currency.symbol }})
-                    {% render 'icon-caret' %}
-                  </button>
-                  <ul id="FooterCountryList" role="list" class="disclosure__list list-unstyled" hidden>
-                    {%- for country in localization.available_countries -%}
-                      <li class="disclosure__item" tabindex="-1">
-                        <a class="link link--text disclosure__link caption-large{% if country.iso_code == localization.country.iso_code %} disclosure__link--active{% endif %} focus-inset" href="#"{% if country.iso_code == localization.country.iso_code %} aria-current="true"{% endif %} data-value="{{ country.iso_code }}">
-                          {{ country.name }} <span class="localization-form__currency">({{ country.currency.iso_code }} {{ country.currency.symbol }})</span>
-                        </a>
-                      </li>
-                    {%- endfor -%}
-                  </ul>
-                </div>
-                <input type="hidden" name="country_code" value="{{ localization.country.iso_code }}">
-              </div>
-            {%- endform -%}
-          </localization-form>
-        {%- endif -%}
-
-        {%- if section.settings.enable_language_selector and localization.available_languages.size > 1 -%}
-          <noscript>
-            {%- form 'localization', id: 'FooterLanguageFormNoScript', class: 'localization-form' -%}
-              <div class="localization-form__select">
-                <h2 class="visually-hidden" id="FooterLanguageLabelNoScript">{{ 'localization.language_label' | t }}</h2>
-                <select class="localization-selector link" name="locale_code" aria-labelledby="FooterLanguageLabelNoScript">
-                  {%- for language in localization.available_languages -%}
-                    <option value="{{ language.iso_code }}" lang="{{ language.iso_code }}" {%- if language.iso_code == localization.language.iso_code %} selected{% endif %}>
-                      {{ language.endonym_name | capitalize }}
-                    </option>
-                  {%- endfor -%}
-                </select>
-                {% render 'icon-caret' %}
-              </div>
-              <button class="button button--tertiary">{{ 'localization.update_language' | t }}</button>
-            {%- endform -%}
-          </noscript>
-
-          <localization-form>
-            {%- form 'localization', id: 'FooterLanguageForm', class: 'localization-form' -%}
-              <div class="no-js-hidden">
-                <h2 class="caption-large" id="FooterLanguageLabel">{{ 'localization.language_label' | t }}</h2>
-                <div class="disclosure">
-                  <button type="button" class="disclosure__button localization-form__select localization-selector link link--text caption-large" aria-expanded="false" aria-controls="FooterLanguageList" aria-describedby="FooterLanguageLabel">
-                    {{ localization.language.endonym_name | capitalize }}
-                    {% render 'icon-caret' %}
-                  </button>
-                  <ul id="FooterLanguageList" role="list" class="disclosure__list list-unstyled" hidden>
-                    {%- for language in localization.available_languages -%}
-                      <li class="disclosure__item" tabindex="-1">
-                        <a class="link link--text disclosure__link caption-large{% if language.iso_code == localization.language.iso_code %} disclosure__link--active{% endif %} focus-inset" href="#" hreflang="{{ language.iso_code }}" lang="{{ language.iso_code }}"{% if language.iso_code == localization.language.iso_code %} aria-current="true"{% endif %} data-value="{{ language.iso_code }}">
-                          {{ language.endonym_name | capitalize }}
-                        </a>
-                      </li>
-                    {%- endfor -%}
-                  </ul>
-                </div>
-                <input type="hidden" name="locale_code" value="{{ localization.language.iso_code }}">
-              </div>
-            {%- endform -%}
-          </localization-form>
-        {%- endif -%}
-      </div>
-      <div class="footer__column footer__column--info">
-        {%- if section.settings.payment_enable -%}
-          <div class="footer__payment">
-            <span class="visually-hidden">{{ 'sections.footer.payment' | t }}</span>
-            <ul class="list list-payment" role="list">
-              {%- for type in shop.enabled_payment_types -%}
-                <li class="list-payment__item">
-                  {{ type | payment_type_svg_tag: class: 'icon icon--full-color' }}
-                </li>
-              {%- endfor -%}
+        {% when 'menu' %}
+          <div class="grid__item {{ column_width }}">
+            {% unless num_columns == 1 %}
+            <h3 class="h4">{{ block.settings.menu_title | escape }}</h3>
+            {% endunless %}
+            <ul class="site-footer__links{% if num_columns == 1 %} inline-list{% endif %}">
+              {% for link in linklists[block.settings.menu].links %}
+                <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+              {% endfor %}
             </ul>
           </div>
-        {%- endif -%}
-        <div class="footer__copyright caption">
-          <small class="copyright__content">&copy; {{ 'now' | date: "%Y" }}, {{ shop.name | link_to: routes.root_url }}</small>
-          <small class="copyright__content">{{ powered_by_link }}</small>
-        </div>
-      </div>
+
+        {% when 'social' %}
+          <div class="grid__item {{ column_width }}">
+            <h3 class="h4">{{ 'layout.footer.social_title' | t }}</h3>
+              {% comment %}
+                Loop through the social network links
+              {% endcomment %}
+              {% include 'social-links' %}
+          </div>
+
+        {% when 'text' %}
+          <div class="grid__item {{ column_width }}">
+            <h3 class="h4">{{ block.settings.title | escape }}</h3>
+            <div class="rte">{{ block.settings.richtext }}</div>
+          </div>
+
+        {% when 'newsletter' %}
+          <div class="grid__item {{ column_width }}">
+            <h3 class="h4">{{ 'layout.footer.newsletter_title' | t }}</h3>
+            {% unless block.settings.subtext == blank %}
+              {{ block.settings.subtext }}
+            {% endunless %}
+            {% include 'newsletter-form' %}
+          </div>
+
+      {% endcase %}
+    {% endfor %}
+  </div>
+
+  <hr class="hr--small hr--clear">
+
+  <div class="grid">
+    <div class="grid__item text-center">
+      <p class="site-footer__links">{{ 'layout.footer.copyright' | t }} &copy; {{ 'now' | date: '%Y' }}, {{ shop.name | link_to: routes.root_url }}. {{ powered_by_link }}</p>
     </div>
   </div>
+
+  {% if section.settings.show_methods_of_payment %}
+    {% unless shop.enabled_payment_types == empty %}
+    <div class="grid">
+      <div class="grid__item text-center">
+        <span class="visually-hidden">{{ 'general.payment.method' | t }}</span>
+        <ul class="inline-list payment-icons">
+          {% for type in shop.enabled_payment_types %}
+            <li>
+              {{ type | payment_type_svg_tag: class: 'icon' }}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    {% endunless %}
+  {% endif %}
+</div>
+
 </footer>
 
-{% javascript %}
-  class LocalizationForm extends HTMLElement {
-    constructor() {
-      super();
-      this.elements = {
-        input: this.querySelector('input[name="locale_code"], input[name="country_code"]'),
-        button: this.querySelector('button'),
-        panel: this.querySelector('ul'),
-      };
-      this.elements.button.addEventListener('click', this.openSelector.bind(this));
-      this.elements.button.addEventListener('focusout', this.closeSelector.bind(this));
-      this.addEventListener('keyup', this.onContainerKeyUp.bind(this));
 
-      this.querySelectorAll('a').forEach(item => item.addEventListener('click', this.onItemClick.bind(this)));
-    }
-
-    hidePanel() {
-      this.elements.button.setAttribute('aria-expanded', 'false');
-      this.elements.panel.setAttribute('hidden', true);
-    }
-
-    onContainerKeyUp(event) {
-      if (event.code.toUpperCase() !== 'ESCAPE') return;
-
-      this.hidePanel();
-      this.elements.button.focus();
-    }
-
-    onItemClick(event) {
-      event.preventDefault();
-      this.elements.input.value = event.currentTarget.dataset.value;
-      this.querySelector('form')?.submit();
-    }
-
-    openSelector() {
-      this.elements.button.focus();
-      this.elements.panel.toggleAttribute('hidden');
-      this.elements.button.setAttribute('aria-expanded', (this.elements.button.getAttribute('aria-expanded') === 'false').toString());
-    }
-
-    closeSelector(event) {
-      const shouldClose = event.relatedTarget && event.relatedTarget.nodeName === 'BUTTON';
-      if (event.relatedTarget === null || shouldClose) {
-        this.hidePanel();
-      }
-    }
-  }
-
-  customElements.define('localization-form', LocalizationForm);
-{% endjavascript %}
 
 {% schema %}
 {
-  "name": "t:sections.footer.name",
+  "name": {
+    "cs": "Zápatí",
+    "da": "Sidefod",
+    "de": "Fußzeile",
+    "en": "Footer",
+    "es": "Pie de página",
+    "fi": "Alatunniste",
+    "fr": "Pied de page",
+    "it": "Footer",
+    "ja": "フッター",
+    "ko": "바닥글",
+    "nb": "Footer",
+    "nl": "Voettekst",
+    "pl": "Stopka",
+    "pt-BR": "Rodapé",
+    "pt-PT": "Rodapé",
+    "sv": "Sidfot",
+    "th": "ส่วนท้าย",
+    "tr": "Altbilgi",
+    "vi": "Chân trang",
+    "zh-CN": "页脚",
+    "zh-TW": "頁尾"
+  },
+  "max_blocks": 6,
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_methods_of_payment",
+      "label": {
+        "cs": "Ikony plateb",
+        "da": "Betalingsikoner",
+        "de": "Zahlungssymbole",
+        "en": "Payment icons",
+        "es": "Iconos de pago",
+        "fi": "Maksukuvakkeet",
+        "fr": "Icônes de paiement",
+        "it": "Icone di pagamento",
+        "ja": "支払いアイコン",
+        "ko": "결제 아이콘",
+        "nb": "Betalingsikoner",
+        "nl": "Betalingspictogrammen",
+        "pl": "Ikony płatności",
+        "pt-BR": "Ícones de pagamento",
+        "pt-PT": "Métodos de Pagamento",
+        "sv": "Betalningsikoner",
+        "th": "ไอคอนการชำระเงิน",
+        "tr": "Ödeme simgeleri",
+        "vi": "Biểu tượng thanh toán",
+        "zh-CN": "付款图标",
+        "zh-TW": "付款圖示"
+      }
+    }
+  ],
   "blocks": [
     {
-      "type": "link_list",
-      "name": "t:sections.footer.blocks.link_list.name",
+      "type": "menu",
+      "name": {
+        "cs": "Nabídka",
+        "da": "Menu",
+        "de": "Menü",
+        "en": "Menu",
+        "es": "Menú",
+        "fi": "Valikko",
+        "fr": "Menu",
+        "it": "Menu",
+        "ja": "メニュー",
+        "ko": "메뉴",
+        "nb": "Meny",
+        "nl": "Menu",
+        "pl": "Menu",
+        "pt-BR": "Menu",
+        "pt-PT": "Menu",
+        "sv": "Meny",
+        "th": "เมนู",
+        "tr": "Menü",
+        "vi": "Menu",
+        "zh-CN": "菜单",
+        "zh-TW": "選單"
+      },
       "settings": [
         {
           "type": "text",
-          "id": "heading",
-          "default": "Quick links",
-          "label": "t:sections.footer.blocks.link_list.settings.heading.label",
-          "info": "t:sections.footer.blocks.link_list.settings.heading.info"
+          "id": "menu_title",
+          "label": {
+            "cs": "Nadpis",
+            "da": "Overskrift",
+            "de": "Titel",
+            "en": "Heading",
+            "es": "Título",
+            "fi": "Otsake",
+            "fr": "Titre",
+            "it": "Heading",
+            "ja": "見出し",
+            "ko": "제목",
+            "nb": "Overskrift",
+            "nl": "Kop",
+            "pl": "Nagłówek",
+            "pt-BR": "Título",
+            "pt-PT": "Título",
+            "sv": "Rubrik",
+            "th": "ส่วนหัว",
+            "tr": "Başlık",
+            "vi": "Tiêu đề",
+            "zh-CN": "标题",
+            "zh-TW": "標題"
+          },
+          "default": {
+            "cs": "Odkazy",
+            "da": "Links",
+            "de": "Links",
+            "en": "Links",
+            "es": "Enlaces",
+            "fi": "Linkit",
+            "fr": "Liens",
+            "it": "Links",
+            "ja": "リンク",
+            "ko": "링크",
+            "nb": "Koblinger",
+            "nl": "Links",
+            "pl": "Linki",
+            "pt-BR": "Links",
+            "pt-PT": "Ligações",
+            "sv": "Länkar",
+            "th": "ลิงก์",
+            "tr": "Bağlantılar",
+            "vi": "Liên kết",
+            "zh-CN": "链接",
+            "zh-TW": "連結"
+          }
         },
         {
           "type": "link_list",
           "id": "menu",
-          "default": "footer",
-          "label": "t:sections.footer.blocks.link_list.settings.menu.label",
-          "info": "t:sections.footer.blocks.link_list.settings.menu.info"
+          "label": {
+            "cs": "Nabídka",
+            "da": "Menu",
+            "de": "Menü",
+            "en": "Menu",
+            "es": "Menú",
+            "fi": "Valikko",
+            "fr": "Menu",
+            "it": "Menu",
+            "ja": "メニュー",
+            "ko": "메뉴",
+            "nb": "Meny",
+            "nl": "Menu",
+            "pl": "Menu",
+            "pt-BR": "Menu",
+            "pt-PT": "Menu",
+            "sv": "Meny",
+            "th": "เมนู",
+            "tr": "Menü",
+            "vi": "Menu",
+            "zh-CN": "菜单",
+            "zh-TW": "選單"
+          }
         }
       ]
     },
     {
       "type": "text",
-      "name": "t:sections.footer.blocks.text.name",
+      "name": {
+        "cs": "Text",
+        "da": "Tekst",
+        "de": "Text",
+        "en": "Text",
+        "es": "Texto",
+        "fi": "Teksti",
+        "fr": "Texte",
+        "it": "Testo",
+        "ja": "テキスト",
+        "ko": "텍스트",
+        "nb": "Tekst",
+        "nl": "Tekst",
+        "pl": "Tekst",
+        "pt-BR": "Texto",
+        "pt-PT": "Texto",
+        "sv": "Text",
+        "th": "ข้อความ",
+        "tr": "Metin",
+        "vi": "Văn bản",
+        "zh-CN": "文本",
+        "zh-TW": "文字"
+      },
       "settings": [
         {
           "type": "text",
-          "id": "heading",
-          "default": "Heading",
-          "label": "t:sections.footer.blocks.text.settings.heading.label"
+          "id": "title",
+          "label": {
+            "cs": "Nadpis",
+            "da": "Overskrift",
+            "de": "Titel",
+            "en": "Heading",
+            "es": "Título",
+            "fi": "Otsake",
+            "fr": "Titre",
+            "it": "Heading",
+            "ja": "見出し",
+            "ko": "제목",
+            "nb": "Overskrift",
+            "nl": "Kop",
+            "pl": "Nagłówek",
+            "pt-BR": "Título",
+            "pt-PT": "Título",
+            "sv": "Rubrik",
+            "th": "ส่วนหัว",
+            "tr": "Başlık",
+            "vi": "Tiêu đề",
+            "zh-CN": "标题",
+            "zh-TW": "標題"
+          },
+          "default": {
+            "cs": "Kontaktujte nás",
+            "da": "Kontakte os",
+            "de": "Kontaktiere uns",
+            "en": "Contact us",
+            "es": "Ponte en contacto con nosotros",
+            "fi": "Ota yhteyttä",
+            "fr": "Contactez-nous",
+            "it": "Contattaci",
+            "ja": "お問い合わせ",
+            "ko": "문의처",
+            "nb": "Kontakt oss",
+            "nl": "Neem contact met ons op",
+            "pl": "Skontaktuj się z nami",
+            "pt-BR": "Fale conosco",
+            "pt-PT": "Contacte-nos",
+            "sv": "Kontakta oss",
+            "th": "ติดต่อเรา",
+            "tr": "Bizimle iletişime geçin",
+            "vi": "Liên hệ với chúng tôi",
+            "zh-CN": "联系我们",
+            "zh-TW": "聯絡我們"
+          }
         },
         {
           "type": "richtext",
-          "id": "subtext",
-          "default": "<p>Share store details, promotions, or brand content with your customers.</p>",
-          "label": "t:sections.footer.blocks.text.settings.subtext.label"
+          "id": "richtext",
+          "label": {
+            "cs": "Text",
+            "da": "Tekst",
+            "de": "Text",
+            "en": "Text",
+            "es": "Texto",
+            "fi": "Teksti",
+            "fr": "Texte",
+            "it": "Testo",
+            "ja": "テキスト",
+            "ko": "텍스트",
+            "nb": "Tekst",
+            "nl": "Tekst",
+            "pl": "Tekst",
+            "pt-BR": "Texto",
+            "pt-PT": "Texto",
+            "sv": "Text",
+            "th": "ข้อความ",
+            "tr": "Metin",
+            "vi": "Văn bản",
+            "zh-CN": "文本",
+            "zh-TW": "文字"
+          }
         }
       ]
     },
     {
-      "type": "image",
-      "name": "Image",
+      "type": "blog",
+      "name": {
+        "cs": "Nejnovější příspěvek na blogu",
+        "da": "Seneste blogopslag",
+        "de": "Letzter Blog-Beitrag",
+        "en": "Latest blog post",
+        "es": "Última entrada en el blog",
+        "fi": "Viimeisin blogijulkaisu",
+        "fr": "Dernier article de blog",
+        "it": "Ultimo articolo del blog",
+        "ja": "最新のブログ記事",
+        "ko": "최근 블로그 게시물",
+        "nb": "Siste blogginnlegg",
+        "nl": "Laatste blogbericht",
+        "pl": "Najnowszy post na blogu",
+        "pt-BR": "Último post do blog",
+        "pt-PT": "Última publicação no blogue",
+        "sv": "Senaste blogginlägget",
+        "th": "โพสต์บล็อกล่าสุด",
+        "tr": "En son blog gönderisi",
+        "vi": "Bài viết blog mới nhất",
+        "zh-CN": "最新博客文章",
+        "zh-TW": "最新的網誌貼文"
+      },
       "settings": [
         {
-          "type": "image_picker",
-          "id": "image",
-          "label": "Image"
-        },
+          "type": "blog",
+          "id": "blog",
+          "label": {
+            "cs": "Blog",
+            "da": "Blog",
+            "de": "Blog",
+            "en": "Blog",
+            "es": "Blog",
+            "fi": "Blogi",
+            "fr": "Blog",
+            "it": "Blog",
+            "ja": "ブログ",
+            "ko": "블로그",
+            "nb": "Blogg",
+            "nl": "Blog",
+            "pl": "Blog",
+            "pt-BR": "Blog",
+            "pt-PT": "Blogue",
+            "sv": "Blogg",
+            "th": "บล็อก",
+            "tr": "Blog",
+            "vi": "Blog",
+            "zh-CN": "博客",
+            "zh-TW": "網誌"
+          }
+        }
+      ]
+    },
+    {
+      "type": "social",
+      "name": {
+        "cs": "Ikony sociálních sítí",
+        "da": "Ikoner for sociale medier",
+        "de": "Social-Media-Symbole",
+        "en": "Social icons",
+        "es": "Iconos de redes sociales",
+        "fi": "Some-kuvakkeet",
+        "fr": "Icônes de partage social",
+        "it": "Icone social",
+        "ja": "ソーシャルアイコン",
+        "ko": "소셜 아이콘",
+        "nb": "Ikoner for sosiale medier",
+        "nl": "Socialmediapictogrammen",
+        "pl": "Ikony mediów społecznościowych",
+        "pt-BR": "Ícones de redes sociais",
+        "pt-PT": "Ícones de redes sociais",
+        "sv": "Sociala medier-ikoner",
+        "th": "ไอคอนโซเชียล",
+        "tr": "Sosyal medya simgeleri",
+        "vi": "Biểu tượng mạng xã hội",
+        "zh-CN": "社交图标",
+        "zh-TW": "社群媒體圖示"
+      },
+      "limit": 1,
+      "settings": [
         {
-          "type": "range",
-          "id": "image_width",
-          "min": 50,
-          "max": 200,
-          "step": 5,
-          "unit": "px",
-          "label": "Image width",
-          "default": 100
-        },
+          "type": "paragraph",
+          "content": {
+            "cs": "Upravte nastavení sociálních sítí a účty v nastavení motivů",
+            "da": "Rediger dine SoMe-indstillinger og -konti i temaindstillingerne",
+            "de": "Einstellungen und Konten für soziale Netzwerke in den Theme-Einstellungen bearbeiten",
+            "en": "Edit your social settings and accounts in theme settings",
+            "es": "Edita tu configuración y tus cuentas de redes sociales en la configuración del tema",
+            "fi": "Muokkaa sosiaalisia asetuksiasi ja tilejäsi teema-asetuksissa",
+            "fr": "Modifiez vos paramètres et vos comptes sociaux dans les paramètres des thèmes",
+            "it": "Modifica impostazioni e account social nelle impostazioni temi",
+            "ja": "テーマ設定でソーシャル設定とアカウントを編集する",
+            "ko": "테마 설정에서 소셜 설정 및 계정 수정",
+            "nb": "Rediger sosiale kontoer og innstillinger under temainnstillinger",
+            "nl": "Bewerk je instellingen en accounts voor social media in thema-instellingen",
+            "pl": "Edytuj ustawienia i konta społecznościowe w ustawieniach szablonu",
+            "pt-BR": "Edite suas configurações sociais e contas nas configurações de tema",
+            "pt-PT": "Editar as suas definições sociais e contas nas definições de tema",
+            "sv": "Redigera dina sociala inställningar och konton i temainställningar",
+            "th": "แก้ไขการตั้งค่าโซเชียลมีเดียและบัญชีผู้ใช้ของคุณที่การตั้งค่าธีม",
+            "tr": "Sosyal medya ayarlarınızı ve hesaplarınızı tema ayarlarından düzenleyin",
+            "vi": "Chỉnh sửa cài đặt và tài khoản mạng xã hội trong cài đặt chủ đề",
+            "zh-CN": "在模板设置中编辑社媒设置和社交媒体账户",
+            "zh-TW": "在「佈景主題」設定中編輯社群設定和帳號"
+          }
+        }
+      ]
+    },
+    {
+      "type": "newsletter",
+      "name": {
+        "cs": "Přihlášení k odběru novinek",
+        "da": "Tilmelding til nyhedsbrev",
+        "de": "Newsletter-Anmeldung",
+        "en": "Newsletter signup",
+        "es": "Suscripción al boletín",
+        "fi": "Uutiskirjeen tilaus",
+        "fr": "Inscription",
+        "it": "Iscrizione Newsletter",
+        "ja": "ニュースレターの登録",
+        "ko": "뉴스레터 신청",
+        "nb": "Registrering for nyhetsbrev",
+        "nl": "Nieuwsbriefaanmelding",
+        "pl": "Rejestracja do newslettera",
+        "pt-BR": "Assinatura da newsletter",
+        "pt-PT": "Registo na newsletter",
+        "sv": "Nyhetsbrevsregistrering",
+        "th": "การสมัครรับจดหมายข่าว",
+        "tr": "Bülten kaydı",
+        "vi": "Đăng ký nhận bản tin",
+        "zh-CN": "新闻通讯注册",
+        "zh-TW": "訂閱電子報"
+      },
+      "limit": 1,
+      "settings": [
         {
-          "type": "select",
-          "id": "alignment",
-          "label": "Image alignment on large screen",
-          "options": [
-            {
-              "value": "",
-              "label": "Left"
-            },
-            {
-              "value": "center",
-              "label": "Center"
-            },
-            {
-              "value": "right",
-              "label": "Right"
-            }
-          ],
-          "default": "center"
+          "type": "richtext",
+          "id": "subtext",
+          "label": {
+            "cs": "Text nižší úrovně",
+            "da": "Undertekst",
+            "de": "Subtext",
+            "en": "Subtext",
+            "es": "Subtexto",
+            "fi": "Alateksti",
+            "fr": "Sous-texte",
+            "it": "Sottotesto",
+            "ja": "サブテキスト",
+            "ko": "하위 텍스트",
+            "nb": "Undertekst",
+            "nl": "Subtekst",
+            "pl": "Tekst podrzędny",
+            "pt-BR": "Subtexto",
+            "pt-PT": "Subtexto",
+            "sv": "Undertext",
+            "th": "ข้อความรอง",
+            "tr": "Alt metin",
+            "vi": "Văn bản phụ",
+            "zh-CN": "子文本",
+            "zh-TW": "子文字"
+          },
+          "default": {
+            "cs": "<p>Zaregistrujte se k odběru nejnovějších zpráv, nabídek a stylů</p>",
+            "da": "<p>Bliv skrevet op til at modtage de seneste nyheder, tilbud og stilarter</p>",
+            "de": "<p>Melde dich für die neuesten Nachrichten, Angebote und Stile an</p>",
+            "en": "<p>Sign up for the latest news, offers and styles</p>",
+            "es": "<p>Regístrate para recibir las últimas noticias, ofertas y estilos</p>",
+            "fi": "<p>Tilaa tuoreimmat uutiset, tarjoukset ja tyylit</p>",
+            "fr": "<p>Inscrivez-vous pour connaître les derniers styles, offres et nouvelles</p>",
+            "it": "<p>Iscriviti per ricevere le ultime novità, offerte e stili</p>",
+            "ja": "<p>サインアップして最新のニュース、オファー、スタイルを受け取る</p>",
+            "ko": "<p>최신 뉴스, 서비스 및 스타일을 위해 가입하십시오.</p>",
+            "nb": "<p>Meld deg på for å motta de siste nyhetene, tilbudene og stilene</p>",
+            "nl": "<p> Meld je aan voor het laatste nieuws, aanbiedingen en stijlen</p>",
+            "pl": "<p>Zarejestruj się, aby otrzymywać najnowsze wiadomości, oferty i style</p>",
+            "pt-BR": "<p>Inscreva-se para receber os últimos estilos, novidades e ofertas</p>",
+            "pt-PT": "<p>Inscreva-se para as notícias, ofertas e estilos mais recentes</p>",
+            "sv": "<p>Registrera dig för de senaste nyheterna, erbjudanden och stilar</p>",
+            "th": "<p>ลงทะเบียนรับข่าวสาร ข้อเสนอ และรูปแบบใหม่ล่าสุด</p>",
+            "tr": "<p>Son haberler, teklifler ve stiller için kaydolun</p>",
+            "vi": "<p>Đăng ký để nhận tin tức, ưu đãi và kiểu mới nhất</p>",
+            "zh-CN": "<p>注册以获取最新新闻、优惠和样式</p>",
+            "zh-TW": "<p>訂閱最新消息、優惠和樣式</p>"
+          }
         }
       ]
     }
-  ],
-  "settings": [
-    {
-      "type": "select",
-      "id": "color_scheme",
-      "options": [
-        {
-          "value": "accent-1",
-          "label": "t:sections.footer.settings.color_scheme.options__1.label"
-        },
-        {
-          "value": "accent-2",
-          "label": "t:sections.footer.settings.color_scheme.options__2.label"
-        },
-        {
-          "value": "background-1",
-          "label": "t:sections.footer.settings.color_scheme.options__3.label"
-        },
-        {
-          "value": "background-2",
-          "label": "t:sections.footer.settings.color_scheme.options__4.label"
-        },
-        {
-          "value": "inverse",
-          "label": "t:sections.footer.settings.color_scheme.options__5.label"
-        }
-      ],
-      "default": "background-1",
-      "label": "t:sections.footer.settings.color_scheme.label"
-    },
-    {
-      "type": "header",
-      "content": "t:sections.footer.settings.header__1.content",
-      "info": "t:sections.footer.settings.header__1.info"
-    },
-    {
-      "type": "checkbox",
-      "id": "newsletter_enable",
-      "default": true,
-      "label": "t:sections.footer.settings.newsletter_enable.label"
-    },
-    {
-      "type": "text",
-      "id": "newsletter_heading",
-      "default": "Subscribe to our emails",
-      "label": "t:sections.footer.settings.newsletter_heading.label"
-    },
-    {
-      "type": "header",
-      "content": "t:sections.footer.settings.header__2.content",
-      "info": "t:sections.footer.settings.header__2.info"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_social",
-      "default": false,
-      "label": "t:sections.footer.settings.show_social.label"
-    },
-    {
-      "type": "header",
-      "content": "t:sections.footer.settings.header__3.content",
-      "info": "t:sections.footer.settings.header__4.info"
-    },
-    {
-      "type": "checkbox",
-      "id": "enable_country_selector",
-      "default": true,
-      "label": "t:sections.footer.settings.enable_country_selector.label"
-    },
-    {
-      "type": "header",
-      "content": "t:sections.footer.settings.header__5.content",
-      "info": "t:sections.footer.settings.header__6.info"
-    },
-    {
-      "type": "checkbox",
-      "id": "enable_language_selector",
-      "default": true,
-      "label": "t:sections.footer.settings.enable_language_selector.label"
-    },
-    {
-      "type": "header",
-      "content": "t:sections.footer.settings.header__7.content"
-    },
-    {
-      "type": "checkbox",
-      "id": "payment_enable",
-      "default": true,
-      "label": "t:sections.footer.settings.payment_enable.label"
-    }
-  ],
-  "default": {
-    "blocks": [
-      {
-        "type": "link_list"
-      },
-      {
-        "type": "text"
-      }
-    ]
-  }
+  ]
 }
 {% endschema %}
